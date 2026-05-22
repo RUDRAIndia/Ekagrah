@@ -1,0 +1,58 @@
+{
+  "manifest_version": 3,
+  "name": "Ekagrah",
+  "version": "1.0",
+  "description": "AI-generated code detector for competitive programming platforms.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "*://*.leetcode.com/*",
+    "*://*.codeforces.com/*",
+    "*://*.hackerrank.com/*",
+    "*://*.geeksforgeeks.org/*",
+    "*://*.codechef.com/*",
+    "*://*.atcoder.jp/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.leetcode.com/*",
+        "*://*.codeforces.com/*",
+        "*://*.hackerrank.com/*",
+        "*://*.geeksforgeeks.org/*",
+        "*://*.codechef.com/*",
+        "*://*.atcoder.jp/*"
+      ],
+      "js": [
+        "messages/roast_messages.js",
+        "messages/praise_messages.js",
+        "content/platform_adapter.js",
+        "content/layer1_behavioral.js",
+        "content/layer2_classifier.js",
+        "content/notification.js",
+        "content/content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
