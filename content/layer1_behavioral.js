@@ -12,7 +12,7 @@ class Layer1Behavioral {
     }
 
     attachListeners(platform) {
-        // Track Paste
+        // Track Paste (Capture phase to catch it before editors intercept)
         document.addEventListener('paste', (e) => {
             try {
                 const pastedData = (e.clipboardData || window.clipboardData).getData('text');
@@ -20,7 +20,18 @@ class Layer1Behavioral {
                     this.flagSession("Layer 1 caught you — You pasted code 💀");
                 }
             } catch(e) {}
-        });
+        }, true);
+
+        // Track Input for non-typing bulk insertions (drag/drop, autocomplete abuse)
+        document.addEventListener('input', (e) => {
+            if (this.isFlagged) return;
+            
+            if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
+                this.flagSession("Layer 1 caught you — Bulk text appeared without typing 💀");
+            } else if (e.data && e.data.length > 30) {
+                this.flagSession("Layer 1 caught you — Bulk text appeared without typing 💀");
+            }
+        }, true);
 
         // Track Keystrokes
         document.addEventListener('keydown', (e) => {
@@ -31,9 +42,9 @@ class Layer1Behavioral {
                 this.editorFocusTime = this.editorFocusTime || Date.now();
                 this.keystrokesLog.push(Date.now());
             }
-        });
+        }, true);
 
-        // Periodic Analysis (Speed & Bulk)
+        // Periodic Analysis (Speed only)
         setInterval(() => {
             if (this.isFlagged) return;
 
@@ -44,21 +55,6 @@ class Layer1Behavioral {
             if (recentKeys.length > 1000) { // > 200 WPM
                 this.flagSession("Layer 1 caught you — Sustained speed > 200 WPM is inhuman 💀");
             }
-
-            const currentCode = getFinalCode(platform);
-            const currentLen = currentCode.length;
-
-            if (this.lastCharCount > 0) {
-                const diff = currentLen - this.lastCharCount;
-                if (diff >= 50) {
-                    // Check if bulk text appeared without corresponding keystrokes
-                    const veryRecentStrokes = this.keystrokesLog.filter(t => now - t < 3000).length;
-                    if (veryRecentStrokes < diff * 0.3) { 
-                        this.flagSession("Layer 1 caught you — Bulk text appeared without typing 💀");
-                    }
-                }
-            }
-            this.lastCharCount = currentLen;
         }, 2000);
     }
 
